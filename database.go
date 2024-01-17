@@ -29,7 +29,7 @@ func readingCount() (int, error) {
 	return n, nil
 }
 
-func loadGroup(t int64) (MeterReading, error) {
+func loadReading(t int64) (MeterReading, error) {
 	stm, err := db.Prepare("SELECT * FROM groups WHERE timestamp=?")
 	if err != nil {
 		return MeterReading{}, err
