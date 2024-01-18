@@ -34,8 +34,7 @@ func main() {
 				continue
 			}
 
-			log.Println("Loaded P1 Meter reading")
-			log.Printf("ActivePowerW: %f", reading.ActivePowerW)
+			log.Printf("Loaded P1 Meter reading ActivePowerW: %f", reading.ActivePowerW)
 
 			saveReading(reading)
 		}
