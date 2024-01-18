@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	pollInterval = 1
+	pollInterval = 10
 )
 
 func main() {
