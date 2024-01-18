@@ -47,10 +47,7 @@ func loadReading(t int64) (MeterReading, error) {
 	}
 
 	var timestamp int64
-	var wifi_ssid string
 	var wifi_strength float64
-	var meter_model string
-	var unique_id string
 	var total_power_import_kwh float64
 	var total_power_import_t1_kwh float64
 	var total_power_export_kwh float64
@@ -66,16 +63,13 @@ func loadReading(t int64) (MeterReading, error) {
 	var active_current_l2_a float64
 	var active_current_l3_a float64
 
-	err = rows.Scan(&timestamp, &wifi_ssid, &wifi_strength, &meter_model, &unique_id, &total_power_import_kwh, &total_power_import_t1_kwh, &total_power_export_kwh, &total_power_export_t1_kwh, &active_power_w, &active_power_l1_w, &active_power_l2_w, &active_power_l3_w, &active_voltage_l1_v, &active_voltage_l2_v, &active_voltage_l3_v, &active_current_l1_a, &active_current_l2_a, &active_current_l3_a)
+	err = rows.Scan(&timestamp, &wifi_strength, &total_power_import_kwh, &total_power_import_t1_kwh, &total_power_export_kwh, &total_power_export_t1_kwh, &active_power_w, &active_power_l1_w, &active_power_l2_w, &active_power_l3_w, &active_voltage_l1_v, &active_voltage_l2_v, &active_voltage_l3_v, &active_current_l1_a, &active_current_l2_a, &active_current_l3_a)
 	if err != nil {
 		return MeterReading{}, err
 	}
 
 	reading := MeterReading{
-		wifi_ssid,
 		wifi_strength,
-		meter_model,
-		unique_id,
 		total_power_import_kwh,
 		total_power_import_t1_kwh,
 		total_power_export_kwh,
@@ -96,12 +90,12 @@ func loadReading(t int64) (MeterReading, error) {
 }
 
 func saveReading(r MeterReading) error {
-	stm, err := db.Prepare("INSERT OR REPLACE INTO readings (timestamp, wifi_ssid, wifi_strength, meter_model, unique_id, total_power_import_kwh, total_power_import_t1_kwh, total_power_export_kwh, total_power_export_t1_kwh, active_power_w, active_power_l1_w, active_power_l2_w, active_power_l3_w, active_voltage_l1_v, active_voltage_l2_v, active_voltage_l3_v, active_current_l1_a, active_current_l2_a, active_current_l3_a) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
+	stm, err := db.Prepare("INSERT OR REPLACE INTO readings (timestamp, wifi_strength, total_power_import_kwh, total_power_import_t1_kwh, total_power_export_kwh, total_power_export_t1_kwh, active_power_w, active_power_l1_w, active_power_l2_w, active_power_l3_w, active_voltage_l1_v, active_voltage_l2_v, active_voltage_l3_v, active_current_l1_a, active_current_l2_a, active_current_l3_a) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
 	if err != nil {
 		return err
 	}
 
-	_, err = stm.Exec(time.Now().Unix(), r.WifiSSID, r.WifiStrength, r.MeterModel, r.UniqueID, r.TotalPowerImportKWH, r.TotalPowerImportT1KWH, r.TotalPowerExportKWH, r.TotalPowerExportT1KWH, r.ActivePowerW, r.ActivePowerL1W, r.ActivePowerL2W, r.ActivePowerL3W, r.ActiveVoltageL1V, r.ActiveVoltageL2V, r.ActiveVoltageL3V, r.ActiveCurrentL1A, r.ActiveCurrentL2A, r.ActiveCurrentL3A)
+	_, err = stm.Exec(time.Now().Unix(), r.WifiStrength, r.TotalPowerImportKWH, r.TotalPowerImportT1KWH, r.TotalPowerExportKWH, r.TotalPowerExportT1KWH, r.ActivePowerW, r.ActivePowerL1W, r.ActivePowerL2W, r.ActivePowerL3W, r.ActiveVoltageL1V, r.ActiveVoltageL2V, r.ActiveVoltageL3V, r.ActiveCurrentL1A, r.ActiveCurrentL2A, r.ActiveCurrentL3A)
 	if err != nil {
 		return err
 	}
@@ -144,7 +138,7 @@ func connectDB() error {
 }
 
 func initDB() error {
-	st, err := db.Prepare("CREATE TABLE IF NOT EXISTS readings (timestamp INTEGER PRIMARY KEY, wifi_ssid TEXT, wifi_strength REAL, meter_model TEXT, unique_id TEXT, total_power_import_kwh REAL, total_power_import_t1_kwh REAL, total_power_export_kwh REAL, total_power_export_t1_kwh REAL, active_power_w REAL, active_power_l1_w REAL, active_power_l2_w REAL, active_power_l3_w REAL, active_voltage_l1_v REAL, active_voltage_l2_v REAL, active_voltage_l3_v REAL, active_current_l1_a REAL, active_current_l2_a REAL, active_current_l3_a REAL)")
+	st, err := db.Prepare("CREATE TABLE IF NOT EXISTS readings (timestamp INTEGER PRIMARY KEY, wifi_strength REAL, total_power_import_kwh REAL, total_power_import_t1_kwh REAL, total_power_export_kwh REAL, total_power_export_t1_kwh REAL, active_power_w REAL, active_power_l1_w REAL, active_power_l2_w REAL, active_power_l3_w REAL, active_voltage_l1_v REAL, active_voltage_l2_v REAL, active_voltage_l3_v REAL, active_current_l1_a REAL, active_current_l2_a REAL, active_current_l3_a REAL)")
 	if err != nil {
 		return err
 	}

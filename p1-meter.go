@@ -88,10 +88,7 @@ func request(method, URL string, body []byte) ([]byte, error) {
 
 // MeterReading JSON type
 type MeterReading struct {
-	WifiSSID              string  `json:"wifi_ssid"`
 	WifiStrength          float64 `json:"wifi_strength"`
-	MeterModel            string  `json:"meter_model"`
-	UniqueID              string  `json:"unique_id"`
 	TotalPowerImportKWH   float64 `json:"total_power_import_kwh"`
 	TotalPowerImportT1KWH float64 `json:"total_power_import_t1_kwh"`
 	TotalPowerExportKWH   float64 `json:"total_power_export_kwh"`
