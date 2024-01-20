@@ -13,7 +13,7 @@ var (
 	db *sql.DB
 )
 
-func readingCount() (int, error) {
+func sqliteCount() (int, error) {
 	rows, err := db.Query("SELECT * FROM readings")
 	if err != nil {
 		return 0, err
@@ -29,7 +29,7 @@ func readingCount() (int, error) {
 	return n, nil
 }
 
-func loadReading(t int64) (MeterReading, error) {
+func sqliteLoadReading(t int64) (MeterReading, error) {
 	stm, err := db.Prepare("SELECT * FROM groups WHERE timestamp=?")
 	if err != nil {
 		return MeterReading{}, err
@@ -89,7 +89,7 @@ func loadReading(t int64) (MeterReading, error) {
 	return reading, nil
 }
 
-func saveReading(r MeterReading) error {
+func sqliteStoreReading(r MeterReading) error {
 	stm, err := db.Prepare("INSERT OR REPLACE INTO readings (timestamp, wifi_strength, total_power_import_kwh, total_power_import_t1_kwh, total_power_export_kwh, total_power_export_t1_kwh, active_power_w, active_power_l1_w, active_power_l2_w, active_power_l3_w, active_voltage_l1_v, active_voltage_l2_v, active_voltage_l3_v, active_current_l1_a, active_current_l2_a, active_current_l3_a) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
 	if err != nil {
 		return err

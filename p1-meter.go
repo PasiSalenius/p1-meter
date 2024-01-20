@@ -7,18 +7,33 @@ import (
 	"time"
 
 	"bytes"
+	"flag"
 	"fmt"
 
 	"net/http"
 )
 
-const (
-	pollInterval = 10
-)
-
 func main() {
-	if err := connectDB(); err != nil {
-		log.Fatal(err)
+	var mode string
+	flag.StringVar(&mode, "mode", "victoriametrics", "'victoriametrics' to write to VictoriaMetrics, 'sqlite' to write to local SQLite")
+
+	var host string
+	flag.StringVar(&host, "host", "localhost", "hostname of VictoriaMetrics instance")
+
+	var pollInterval int64
+	flag.Int64Var(&pollInterval, "interval", 10, "poll interval")
+
+	flag.Parse()
+
+	log.Println("Selected mode:", mode)
+	if mode == "sqlite" {
+		log.Println("Writing data to local SQLite database (p1-meter.db)")
+		log.Println("Selected mode:", mode)
+		if err := connectDB(); err != nil {
+			log.Fatal(err)
+		}
+	} else {
+		log.Println("Writing data to VictoriaMetrics at", host)
 	}
 
 	interval := time.Duration(pollInterval) * time.Second
@@ -34,9 +49,13 @@ func main() {
 				continue
 			}
 
-			log.Printf("Loaded P1 Meter reading ActivePowerW: %f", reading.ActivePowerW)
+			log.Printf("Loaded P1 Meter reading: ActivePowerW: %f", reading.ActivePowerW)
 
-			saveReading(reading)
+			if mode == "sqlite" {
+				sqliteStoreReading(reading)
+			} else if mode == "victoriametrics" {
+				writeInfluxDB(reading, host)
+			}
 		}
 
 	}(done)
@@ -58,6 +77,38 @@ func getReading() (MeterReading, error) {
 	}
 
 	return reading, nil
+}
+
+func writeInfluxDB(r MeterReading, host string) error {
+	str := fmt.Sprintf(
+		"p1,tag=p1 wifi_strength=%f,total_power_import_kwh=%f,total_power_import_t1_kwh=%f,total_power_export_kwh=%f,total_power_export_t1_kwh=%f,active_power_w=%f,active_power_l1_w=%f,active_power_l2_w=%f,active_power_l3_w=%f,active_voltage_l1_v=%f,active_voltage_l2_v=%f,active_voltage_l3_v=%f,active_current_l1_a=%f,active_current_l2_a=%f,active_current_l3_a=%f",
+		r.WifiStrength,
+		r.TotalPowerImportKWH,
+		r.TotalPowerExportT1KWH,
+		r.TotalPowerExportKWH,
+		r.TotalPowerExportT1KWH,
+		r.ActivePowerW,
+		r.ActivePowerL1W,
+		r.ActivePowerL2W,
+		r.ActivePowerL3W,
+		r.ActiveVoltageL1V,
+		r.ActiveVoltageL2V,
+		r.ActiveVoltageL3V,
+		r.ActiveCurrentL1A,
+		r.ActiveCurrentL2A,
+		r.ActiveCurrentL3A,
+	)
+
+	b := []byte(str)
+
+	url := fmt.Sprintf("http://%s:8428/write", host)
+
+	_, err := request("POST", url, b)
+	if err != nil {
+		return fmt.Errorf("! failed load: %v", err)
+	}
+
+	return nil
 }
 
 func request(method, URL string, body []byte) ([]byte, error) {
