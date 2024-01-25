@@ -103,7 +103,7 @@ func sqliteStoreReading(r MeterReading) error {
 	return nil
 }
 
-func deleteReading(t int64) error {
+func sqliteDeleteReading(t int64) error {
 	stm, err := db.Prepare("DELETE FROM readings WHERE timestamp=?")
 	if err != nil {
 		return err

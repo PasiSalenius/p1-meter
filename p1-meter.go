@@ -21,7 +21,7 @@ func main() {
 	flag.StringVar(&host, "host", "localhost", "hostname of VictoriaMetrics instance")
 
 	var pollInterval int64
-	flag.Int64Var(&pollInterval, "interval", 10, "poll interval")
+	flag.Int64Var(&pollInterval, "interval", 10, "poll interval (s)")
 
 	flag.Parse()
 
